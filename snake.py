@@ -1,38 +1,70 @@
 import pygame
-import time
 from pygame.locals import *
+from time import sleep
 from random import randint
 from pathlib import Path
-from config import BACKGROUND, FPS, SIZE, STARTLENGTH, WINDOW
+from config import BACKGROUND, FPS, SIZE, STARTLENGTH, W_SIZE
 
 
-def randPosX():
-    return SIZE * randint(1, WINDOW[0] / SIZE - 1)
+def rand_x() -> int:
+    return SIZE * randint(1, W_SIZE[0] / SIZE - 1)
 
-def randPosY():
-    return SIZE * randint(1, WINDOW[1] / SIZE - 1)
+def rand_y() -> int:
+    return SIZE * randint(1, W_SIZE[1] / SIZE - 1)
 
 
 class Game:
     def __init__(self):
         pygame.init()
         # Sets window size
-        self.surface = pygame.display.set_mode(WINDOW, SRCALPHA)
+        self.surface = pygame.display.set_mode(W_SIZE, SRCALPHA, NOFRAME)
         # Sets background colour
         self.surface.fill(BACKGROUND)
 
         self.snake = Snake(self.surface, STARTLENGTH)
         self.snake.draw()
 
+        self.mouse = Mouse(self.surface)
+        self.mouse.draw()
+
+
+    def hit_mouse(self) -> bool:
+        if self.snake.x[0] == self.mouse.x and self.snake.y[0] == self.mouse.y:
+            return True
+        return False
+
+
+    def hit_wall(self) -> bool:
+        if self.snake.x[0] not in range(1, W_SIZE[0] - SIZE)\
+            or self.snake.y[0] not in range(1, W_SIZE[1] - SIZE):
+                return True
+        return False
+
+
+    def hit_self(self) -> bool:
+        for i in range(3, self.snake.length):
+            if self.snake.x[0] == self.snake.x[i] and\
+                self.snake.y[0] == self.snake.y[i]:
+                    return True
+        return False
+
 
     def reset(self):
         self.snake.length = STARTLENGTH
-        self.snake.x[0] = randPosX()
-        self.snake.y[0] = randPosY()
+        self.snake.x = [W_SIZE[0] / SIZE // 2 * SIZE] * STARTLENGTH
+        self.snake.y = [W_SIZE[1] / SIZE // 2 * SIZE] * STARTLENGTH
 
 
     def play(self):
+        if self.hit_mouse():
+            self.mouse.move()
+            self.snake.inc_len()
+
+        if self.hit_wall() or self.hit_self():
+            raise "Game Over"
+
         self.snake.slither()
+        self.mouse.draw()
         pygame.display.flip()
 
 
@@ -64,7 +96,6 @@ class Game:
                             self.snake.turns()
                             self.snake.move('R')
 
-                    
                 if event.type == QUIT:
                     running = False
 
@@ -74,9 +105,24 @@ class Game:
 
             except Exception as e:
                 print(e)
+                self.game_over()
                 pause = True
+                self.reset()
 
-            time.sleep(1/FPS)
+            sleep(1/FPS)
+
+    def game_over(self):
+        final_score = self.snake.length - STARTLENGTH
+        self.surface.fill(BACKGROUND)
+        font = pygame.font.SysFont("arial", 30)
+
+        line1 = font.render('Game Over!', True, (0,0,0))
+        line2 = font.render(f'Your score: {final_score}', True, (0,0,0))
+        line3 = font.render('Press enter to play again...', True, (0,0,0))
+        self.surface.blit(line1, (200, 240))
+        self.surface.blit(line2, (200, 275))
+        self.surface.blit(line3, (200, 320))
+        pygame.display.flip()
 
 
 class Snake:
@@ -84,13 +130,13 @@ class Snake:
         self.surface = surface
         self.length = length
 
-        self.x = [randPosX()] * length
-        self.y = [randPosY()] * length
+        self.x = [W_SIZE[0] / SIZE // 2 * SIZE] * length
+        self.y = [W_SIZE[1] / SIZE // 2 * SIZE] * length
 
         self.xyd = ['R'] * STARTLENGTH
 
         self.direction = 'R'
-        self.turnPoints = []
+        self.turn_points = []
 
         sprite_dir = 'resources'
         sprites = Path(sprite_dir).glob('*')
@@ -118,14 +164,15 @@ class Snake:
 
 
     def turns(self):
-        self.turnPoints.append((self.x[0], self.y[0]))
+        self.turn_points.append((self.x[0], self.y[0]))
         print(self.xyd)
 
 
-    def incLength(self):
+    def inc_len(self):
         self.length += 1
         self.x.append(-1)
         self.y.append(-1)
+        self.xyd.append(-1)
 
 
     def draw(self):
@@ -186,8 +233,6 @@ class Snake:
             case 'R':
                 self.surface.blit(self.tail_r, coords_tail)
 
-        pygame.display.flip()
-
 
     def move(self, dir):
         match dir:
@@ -217,16 +262,36 @@ class Snake:
             case 'R':
                 self.x[0] += SIZE
 
-        for i, tu in enumerate(self.turnPoints):
+        for i, tu in enumerate(self.turn_points):
             if (tu[0] in self.x and tu[1] not in self.y)\
                 or (tu[1] in self.y and tu[0] not in self.x)\
                 or (tu[0] not in self.x and tu[1] not in self.y):
-                self.turnPoints.pop(i)
+                self.turn_points.pop(i)
 
         self.xyd.pop(-1)
         self.xyd.insert(0, self.direction)
 
         self.draw()
+
+
+class Mouse:
+    def __init__(self, surface):
+        self.image = pygame.transform.scale(pygame.image.load(
+            'resources/mouse.png').convert_alpha(), (SIZE, SIZE))
+
+        self.surface = surface
+
+        self.x = rand_x()
+        self.y = rand_y()
+
+
+    def draw(self):
+        self.surface.blit(self.image, (self.x, self.y))
+
+    
+    def move(self):
+        self.x = rand_x()
+        self.y = rand_y()
 
 
 if __name__ == '__main__':
