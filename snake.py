@@ -114,6 +114,16 @@ class Snake:
         self.body_v = self.body
         self.body_h = pygame.transform.rotate(self.body, 90)
 
+        self.head_u = self.head
+        self.head_d = pygame.transform.rotate(self.head, 180)
+        self.head_l = pygame.transform.rotate(self.head, 90)
+        self.head_r = pygame.transform.rotate(self.head, -90)
+
+        self.tail_u = self.tail
+        self.tail_d = pygame.transform.rotate(self.tail, 180)
+        self.tail_l = pygame.transform.rotate(self.tail, 90)
+        self.tail_r = pygame.transform.rotate(self.tail, -90)
+
 
     def turns(self):
         self.turnPoints.append((self.x[0], self.y[0]))
@@ -128,16 +138,36 @@ class Snake:
 
     def draw(self):
         self.surface.fill(BACKGROUND)
-        self.surface.blit(self.head, (self.x[0], self.y[0]))
+
+        coords_head = (self.x[0], self.y[0])
+        match self.xyd[0]:
+            case 'U':
+                self.surface.blit(self.head_u, coords_head)
+            case 'D':
+                self.surface.blit(self.head_d, coords_head)
+            case 'L':
+                self.surface.blit(self.head_l, coords_head)
+            case 'R':
+                self.surface.blit(self.head_r, coords_head)
 
         for i in range(1, self.length - 1):
-            if (self.x[i], self.y[i]) in self.turnPoints:
-                self.surface.blit(self.turn, (self.x[i], self.y[i]))
-            else:
+            coords = (self.x[i], self.y[i])
+            match self.xyd[i]:
+                case 'U' | 'D' if coords not in self.turnPoints:
+                    self.surface.blit(self.body_v, coords)
+                case 'L' | 'R' if coords not in self.turnPoints:
+                    self.surface.blit(self.body_h, coords)
 
-                self.surface.blit(self.body, (self.x[i], self.y[i]))
-
-        self.surface.blit(self.tail, (self.x[-1], self.y[-1]))
+        coords_tail = (self.x[-1], self.y[-1])
+        match self.xyd[-1]:
+            case 'U':
+                self.surface.blit(self.tail_u, coords_tail)
+            case 'D':
+                self.surface.blit(self.tail_d, coords_tail)
+            case 'L':
+                self.surface.blit(self.tail_l, coords_tail)
+            case 'R':
+                self.surface.blit(self.tail_r, coords_tail)
 
         pygame.display.flip()
 
