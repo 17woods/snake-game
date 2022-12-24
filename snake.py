@@ -124,6 +124,11 @@ class Snake:
         self.tail_l = pygame.transform.rotate(self.tail, 90)
         self.tail_r = pygame.transform.rotate(self.tail, -90)
 
+        self.turn_dl = self.turn
+        self.turn_dr = pygame.transform.rotate(self.turn, 90)
+        self.turn_ul = pygame.transform.rotate(self.turn, -90)
+        self.turn_ur = pygame.transform.rotate(self.turn, 180)
+
 
     def turns(self):
         self.turnPoints.append((self.x[0], self.y[0]))
@@ -153,13 +158,36 @@ class Snake:
         for i in range(1, self.length - 1):
             coords = (self.x[i], self.y[i])
             match self.xyd[i]:
-                case 'U' | 'D' if coords not in self.turnPoints:
+                # Straight body
+                case 'U' | 'D' if self.xyd[i - 1] in ['U', 'D']:
                     self.surface.blit(self.body_v, coords)
-                case 'L' | 'R' if coords not in self.turnPoints:
+                case 'L' | 'R' if self.xyd[i - 1] in ['L', 'R']:
                     self.surface.blit(self.body_h, coords)
 
+                # Turning body
+                case 'U' if self.xyd[i - 1] == 'L':
+                    self.surface.blit(self.turn_dl, coords)
+                case 'L' if self.xyd[i - 1] == 'U':
+                    self.surface.blit(self.turn_ur, coords)
+
+                case 'U' if self.xyd[i - 1] == 'R':
+                    self.surface.blit(self.turn_dr, coords)
+                case 'R' if self.xyd[i - 1] == 'U':
+                    self.surface.blit(self.turn_ul, coords)
+
+                case 'D' if self.xyd[i - 1] == 'L':
+                    self.surface.blit(self.turn_ul, coords) # Right
+                case 'L' if self.xyd[i - 1] == 'D':
+                    self.surface.blit(self.turn_dr, coords)
+                
+                case 'D' if self.xyd[i - 1] == 'R':
+                    self.surface.blit(self.turn_ur, coords)
+                case 'R' if self.xyd[i - 1] == 'D':
+                    self.surface.blit(self.turn_dl, coords)
+
+
         coords_tail = (self.x[-1], self.y[-1])
-        match self.xyd[-1]:
+        match self.xyd[-2]:
             case 'U':
                 self.surface.blit(self.tail_u, coords_tail)
             case 'D':
