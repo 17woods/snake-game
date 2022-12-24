@@ -38,19 +38,19 @@ class Game:
 
     def run(self):
         running = True
-        stop = False
+        pause = False
 
         while running:
             for event in pygame.event.get():
                 if event.type == KEYDOWN:
                     # Enter or Space to pause
                     if event.key == K_RETURN or event.key == K_SPACE:
-                        stop = not stop
+                        pause = not pause
                     # Esc or X button (on the window) to quit
                     if event.key == K_ESCAPE:
                         running = False
 
-                    if not stop:
+                    if not pause:
                         if event.key in (K_w, K_UP):
                             self.snake.turns()
                             self.snake.move('U')
@@ -69,12 +69,12 @@ class Game:
                     running = False
 
             try:
-                if not stop:
+                if not pause:
                     self.play()
 
             except Exception as e:
                 print(e)
-                stop = True
+                pause = True
 
             time.sleep(1/FPS)
 
@@ -159,17 +159,17 @@ class Snake:
                 case 'D' if self.xyd[i - 1] == 'L':
                     self.surface.blit(self.turn_ul, coords)
 
-                case 'U' if self.xyd[i - 1] == 'L':
+                case 'L' if self.xyd[i - 1] == 'U':
                     self.surface.blit(self.turn_ur, coords)
                 case 'D' if self.xyd[i - 1] == 'R':
                     self.surface.blit(self.turn_ur, coords)
 
-                case 'U' if self.xyd[i - 1] == 'R':
+                case 'U' if self.xyd[i - 1] == 'L':
                     self.surface.blit(self.turn_dl, coords)
                 case 'R' if self.xyd[i - 1] == 'D':
                     self.surface.blit(self.turn_dl, coords)
 
-                case 'L' if self.xyd[i - 1] == 'U':
+                case 'U' if self.xyd[i - 1] == 'R':
                     self.surface.blit(self.turn_dr, coords)
                 case 'L' if self.xyd[i - 1] == 'D':
                     self.surface.blit(self.turn_dr, coords)

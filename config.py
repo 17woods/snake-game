@@ -9,7 +9,7 @@ BACKGROUND = (250, 225, 170)
 WINDOW = (888, 888)
 
 # Starting snake length; 3
-STARTLENGTH = 3
+STARTLENGTH = 9
 
 # FPS; 12
 FPS = 12
