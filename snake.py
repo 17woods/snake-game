@@ -3,20 +3,7 @@ import time
 from pygame.locals import *
 from random import randint
 from pathlib import Path
-
-
-# Game scale, default: 32
-SIZE = 32
-
-# Background colour, default: 110, 110, 5
-BACKGROUND = (250, 225, 170)
-
-# Window size, default: 1280, 736
-WINDOW = (1280, 736)
-
-STARTLENGTH = 9
-
-FPS = 12
+from config import BACKGROUND, FPS, SIZE, STARTLENGTH, WINDOW
 
 
 def randPosX():
@@ -144,6 +131,7 @@ class Snake:
     def draw(self):
         self.surface.fill(BACKGROUND)
 
+        # Render head
         coords_head = (self.x[0], self.y[0])
         match self.xyd[0]:
             case 'U':
@@ -155,6 +143,7 @@ class Snake:
             case 'R':
                 self.surface.blit(self.head_r, coords_head)
 
+        # Render body
         for i in range(1, self.length - 1):
             coords = (self.x[i], self.y[i])
             match self.xyd[i]:
@@ -165,27 +154,27 @@ class Snake:
                     self.surface.blit(self.body_h, coords)
 
                 # Turning body
+                case 'R' if self.xyd[i - 1] == 'U':
+                    self.surface.blit(self.turn_ul, coords)
+                case 'D' if self.xyd[i - 1] == 'L':
+                    self.surface.blit(self.turn_ul, coords)
+
                 case 'U' if self.xyd[i - 1] == 'L':
-                    self.surface.blit(self.turn_dl, coords)
-                case 'L' if self.xyd[i - 1] == 'U':
+                    self.surface.blit(self.turn_ur, coords)
+                case 'D' if self.xyd[i - 1] == 'R':
                     self.surface.blit(self.turn_ur, coords)
 
                 case 'U' if self.xyd[i - 1] == 'R':
-                    self.surface.blit(self.turn_dr, coords)
-                case 'R' if self.xyd[i - 1] == 'U':
-                    self.surface.blit(self.turn_ul, coords)
-
-                case 'D' if self.xyd[i - 1] == 'L':
-                    self.surface.blit(self.turn_ul, coords) # Right
-                case 'L' if self.xyd[i - 1] == 'D':
-                    self.surface.blit(self.turn_dr, coords)
-                
-                case 'D' if self.xyd[i - 1] == 'R':
-                    self.surface.blit(self.turn_ur, coords)
+                    self.surface.blit(self.turn_dl, coords)
                 case 'R' if self.xyd[i - 1] == 'D':
                     self.surface.blit(self.turn_dl, coords)
 
+                case 'L' if self.xyd[i - 1] == 'U':
+                    self.surface.blit(self.turn_dr, coords)
+                case 'L' if self.xyd[i - 1] == 'D':
+                    self.surface.blit(self.turn_dr, coords)
 
+        # Render tail
         coords_tail = (self.x[-1], self.y[-1])
         match self.xyd[-2]:
             case 'U':
