@@ -46,11 +46,7 @@ class Game:
 
 
     def hit_self(self) -> bool:
-        for i in range(3, self.snake.length):
-            if self.snake.x[0] == self.snake.x[i] and\
-                self.snake.y[0] == self.snake.y[i]:
-                    return True
-        return False
+        return any(self.snake.x[0] == self.snake.x[i] and self.snake.y[0] == self.snake.y[i] for i in range(3, self.snake.length))
 
 
     def reset(self):
