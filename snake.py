@@ -3,7 +3,7 @@ from pygame.locals import *
 from time import sleep
 from random import randint
 from pathlib import Path
-from config import BACKGROUND, FPS, SIZE, STARTLENGTH, W_SIZE
+from config import BACKGROUND, EL_SIZE, FPS, SIZE, STARTLENGTH, W_SIZE
 
 
 def rand_x() -> int:
@@ -11,6 +11,10 @@ def rand_x() -> int:
 
 def rand_y() -> int:
     return SIZE * randint(1, W_SIZE[1] / SIZE - 1)
+
+def resource(name):
+    return pygame.transform.scale(pygame.image.load(
+        f'resources/{name}.png').convert_alpha(), EL_SIZE)
 
 
 class Game:
@@ -35,8 +39,8 @@ class Game:
 
 
     def hit_wall(self) -> bool:
-        if self.snake.x[0] not in range(1, W_SIZE[0] - SIZE)\
-            or self.snake.y[0] not in range(1, W_SIZE[1] - SIZE):
+        if self.snake.x[0] not in range(1, W_SIZE[0])\
+            or self.snake.y[0] not in range(1, W_SIZE[1]):
                 return True
         return False
 
@@ -50,9 +54,7 @@ class Game:
 
 
     def reset(self):
-        self.snake.length = STARTLENGTH
-        self.snake.x = [W_SIZE[0] / SIZE // 2 * SIZE] * STARTLENGTH
-        self.snake.y = [W_SIZE[1] / SIZE // 2 * SIZE] * STARTLENGTH
+        self.snake = Snake(self.surface, STARTLENGTH)
 
 
     def play(self):
@@ -111,6 +113,7 @@ class Game:
 
             sleep(1/FPS)
 
+
     def game_over(self):
         final_score = self.snake.length - STARTLENGTH
         self.surface.fill(BACKGROUND)
@@ -138,29 +141,23 @@ class Snake:
         self.direction = 'R'
         self.turn_points = []
 
-        sprite_dir = 'resources'
-        sprites = Path(sprite_dir).glob('*')
-        for spr in sprites:
-            setattr(self, spr.stem, pygame.transform.scale(pygame.image.load(
-                spr).convert_alpha(), (SIZE, SIZE)))
+        self.body_v = resource('body')
+        self.body_h = pygame.transform.rotate(self.body_v, 90)
 
-        self.body_v = self.body
-        self.body_h = pygame.transform.rotate(self.body, 90)
+        self.head_u = resource('head')
+        self.head_d = pygame.transform.rotate(self.head_u, 180)
+        self.head_l = pygame.transform.rotate(self.head_u, 90)
+        self.head_r = pygame.transform.rotate(self.head_u, -90)
 
-        self.head_u = self.head
-        self.head_d = pygame.transform.rotate(self.head, 180)
-        self.head_l = pygame.transform.rotate(self.head, 90)
-        self.head_r = pygame.transform.rotate(self.head, -90)
+        self.tail_u = resource('tail')
+        self.tail_d = pygame.transform.rotate(self.tail_u, 180)
+        self.tail_l = pygame.transform.rotate(self.tail_u, 90)
+        self.tail_r = pygame.transform.rotate(self.tail_u, -90)
 
-        self.tail_u = self.tail
-        self.tail_d = pygame.transform.rotate(self.tail, 180)
-        self.tail_l = pygame.transform.rotate(self.tail, 90)
-        self.tail_r = pygame.transform.rotate(self.tail, -90)
-
-        self.turn_dl = self.turn
-        self.turn_dr = pygame.transform.rotate(self.turn, 90)
-        self.turn_ul = pygame.transform.rotate(self.turn, -90)
-        self.turn_ur = pygame.transform.rotate(self.turn, 180)
+        self.turn_dl = resource('turn')
+        self.turn_dr = pygame.transform.rotate(self.turn_dl, 90)
+        self.turn_ul = pygame.transform.rotate(self.turn_dl, -90)
+        self.turn_ur = pygame.transform.rotate(self.turn_dl, 180)
 
 
     def turns(self):
@@ -251,7 +248,6 @@ class Snake:
             self.x[i] = self.x[i - 1]
             self.y[i] = self.y[i - 1]
 
-
         match self.direction:
             case 'U':
                 self.y[0] -= SIZE
@@ -276,22 +272,43 @@ class Snake:
 
 class Mouse:
     def __init__(self, surface):
-        self.image = pygame.transform.scale(pygame.image.load(
-            'resources/mouse.png').convert_alpha(), (SIZE, SIZE))
-
         self.surface = surface
+        self.image = resource('mouse')
 
         self.x = rand_x()
         self.y = rand_y()
+
+        self.counter = 0
 
 
     def draw(self):
-        self.surface.blit(self.image, (self.x, self.y))
+        # Flips every 7 frames
+        if self.counter % 7 == 0:
+            self.image = pygame.transform.flip(self.image, True, False)
 
-    
+        self.surface.blit(self.image, (self.x, self.y))
+        self.counter += 1
+
+
     def move(self):
         self.x = rand_x()
         self.y = rand_y()
+
+
+class Wall:
+    def __init__(self, surface):
+        self.image = resource('wall')
+
+        min_x = 0
+        max_x = W_SIZE[0]
+        min_y = 0
+        max_y = W_SIZE[1]
+
+        coords_wall = []
+        for q in range(W_SIZE[0] / SIZE):
+            pass
+
+
 
 
 if __name__ == '__main__':

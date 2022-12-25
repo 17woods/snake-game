@@ -1,6 +1,8 @@
 # Game scale; 24
 SIZE = 24
 
+EL_SIZE = (SIZE, SIZE)
+
 # Background colour; 250, 225, 170
 BACKGROUND = (250, 225, 170)
 
