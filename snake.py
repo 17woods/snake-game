@@ -74,7 +74,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == KEYDOWN:
                     # Enter or Space to pause
-                    if event.key == K_RETURN or event.key == K_SPACE:
+                    if event.key in (K_RETURN, K_SPACE):
                         pause = not pause
                     # Esc or X button (on the window) to quit
                     if event.key == K_ESCAPE:
