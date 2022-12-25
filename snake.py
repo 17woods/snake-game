@@ -7,10 +7,12 @@ from config import BACKGROUND, EL_SIZE, FPS, SIZE, STARTLENGTH, W_SIZE
 
 
 def rand_x() -> int:
-    return SIZE * randint(1, W_SIZE[0] / SIZE - 1)
+    return SIZE * randint(1, W_SIZE[0] / SIZE - 2)
+
 
 def rand_y() -> int:
-    return SIZE * randint(1, W_SIZE[1] / SIZE - 1)
+    return SIZE * randint(1, W_SIZE[1] / SIZE - 2)
+
 
 def resource(name):
     return pygame.transform.scale(pygame.image.load(
@@ -31,40 +33,39 @@ class Game:
         self.mouse = Mouse(self.surface)
         self.mouse.draw()
 
+        self.wall = Wall(self.surface)
+        self.wall.draw()
 
     def hit_mouse(self) -> bool:
         if self.snake.x[0] == self.mouse.x and self.snake.y[0] == self.mouse.y:
             return True
         return False
 
-
     def hit_wall(self) -> bool:
-        if self.snake.x[0] not in range(1, W_SIZE[0])\
-            or self.snake.y[0] not in range(1, W_SIZE[1]):
+        if self.snake.x[0] not in range(SIZE, W_SIZE[0] - SIZE)\
+            or self.snake.y[0] not in range(SIZE, W_SIZE[1] - SIZE):
                 return True
         return False
-
 
     def hit_self(self) -> bool:
         return any(self.snake.x[0] == self.snake.x[i] and self.snake.y[0] == self.snake.y[i] for i in range(3, self.snake.length))
 
-
     def reset(self):
         self.snake = Snake(self.surface, STARTLENGTH)
 
-
     def play(self):
+        self.snake.slither()
+        self.mouse.draw()
+        self.wall.draw()
+
         if self.hit_mouse():
-            self.mouse.move()
+            self.mouse.move(self.snake)
             self.snake.inc_len()
 
         if self.hit_wall() or self.hit_self():
-            raise "Game Over"
+            raise Exception('Game Over')
 
-        self.snake.slither()
-        self.mouse.draw()
         pygame.display.flip()
-
 
     def run(self):
         running = True
@@ -108,7 +109,6 @@ class Game:
                 self.reset()
 
             sleep(1/FPS)
-
 
     def game_over(self):
         final_score = self.snake.length - STARTLENGTH
@@ -155,18 +155,14 @@ class Snake:
         self.turn_ul = pygame.transform.rotate(self.turn_dl, -90)
         self.turn_ur = pygame.transform.rotate(self.turn_dl, 180)
 
-
     def turns(self):
         self.turn_points.append((self.x[0], self.y[0]))
-        print(self.xyd)
-
 
     def inc_len(self):
         self.length += 1
         self.x.append(-1)
         self.y.append(-1)
         self.xyd.append(-1)
-
 
     def draw(self):
         self.surface.fill(BACKGROUND)
@@ -226,18 +222,16 @@ class Snake:
             case 'R':
                 self.surface.blit(self.tail_r, coords_tail)
 
-
     def move(self, dir):
         match dir:
-            case 'U' if self.direction != 'D':
+            case 'U' if self.xyd[0] != 'D':
                 self.direction = 'U'
-            case 'D' if self.direction != 'U':
+            case 'D' if self.xyd[0] != 'U':
                 self.direction = 'D'
-            case 'L' if self.direction != 'R':
+            case 'L' if self.xyd[0] != 'R':
                 self.direction = 'L'
-            case 'R' if self.direction != 'L':
+            case 'R' if self.xyd[0] != 'L':
                 self.direction = 'R'
-
 
     def slither(self):
         for i in range(self.length - 1, 0 , -1):
@@ -276,7 +270,6 @@ class Mouse:
 
         self.counter = 0
 
-
     def draw(self):
         # Flips every 7 frames
         if self.counter % 7 == 0:
@@ -285,26 +278,28 @@ class Mouse:
         self.surface.blit(self.image, (self.x, self.y))
         self.counter += 1
 
-
-    def move(self):
-        self.x = rand_x()
-        self.y = rand_y()
+    def move(self, snake: Snake):
+        snk_coords = list(zip(snake.x, snake.y))
+        while (self.x, self.y) in snk_coords:
+            self.x = rand_x()
+            self.y = rand_y()
 
 
 class Wall:
     def __init__(self, surface):
         self.image = resource('wall')
+        self.surface = surface
 
-        min_x = 0
-        max_x = W_SIZE[0]
-        min_y = 0
-        max_y = W_SIZE[1]
+        self.coords_wall = []
+        for q in range(W_SIZE[0] // SIZE):
+            self.coords_wall.append((q * SIZE, 0))
+            self.coords_wall.append((q * SIZE, W_SIZE[1] - SIZE))
+            self.coords_wall.append((0, q * SIZE))
+            self.coords_wall.append((W_SIZE[0] - SIZE, q * SIZE))
 
-        coords_wall = []
-        for q in range(W_SIZE[0] / SIZE):
-            pass
-
-
+    def draw(self):
+        for coords in self.coords_wall:
+            self.surface.blit(self.image, coords)
 
 
 if __name__ == '__main__':
