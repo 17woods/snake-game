@@ -37,15 +37,10 @@ class Game:
         self.wall.draw()
 
     def hit_mouse(self) -> bool:
-        if self.snake.x[0] == self.mouse.x and self.snake.y[0] == self.mouse.y:
-            return True
-        return False
+        return self.snake.x[0] == self.mouse.x and self.snake.y[0] == self.mouse.y
 
     def hit_wall(self) -> bool:
-        if self.snake.x[0] not in range(SIZE, W_SIZE[0] - SIZE)\
-            or self.snake.y[0] not in range(SIZE, W_SIZE[1] - SIZE):
-                return True
-        return False
+        return self.snake.x[0] not in range(SIZE, W_SIZE[0] - SIZE) or self.snake.y[0] not in range(SIZE, W_SIZE[1] - SIZE)
 
     def hit_self(self) -> bool:
         return any(self.snake.x[0] == self.snake.x[i] and self.snake.y[0] == self.snake.y[i] for i in range(3, self.snake.length))
@@ -258,6 +253,17 @@ class Snake:
         self.xyd.insert(0, self.direction)
 
         self.draw()
+
+    def hit_mouse(self, mouse) -> bool:
+        return self.x[0] == mouse.x and self.y[0] == mouse.y
+
+    def hit_wall(self) -> bool:
+        return self.x[0] not in range(SIZE, W_SIZE[0] - SIZE) or\
+            self.y[0] not in range(SIZE, W_SIZE[1] - SIZE)
+
+    def hit_self(self) -> bool:
+        return any(self.x[0] == self.x[i] and self.y[0] == self.y[i]\
+            for i in range(3, self.length))
 
 
 class Mouse:
