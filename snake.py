@@ -35,17 +35,6 @@ class Game:
         self.wall = Wall(self.surface)
         self.wall.draw()
 
-    def hit_mouse(self) -> bool:
-        return self.snake.x[0] == self.mouse.x and self.snake.y[0] == self.mouse.y
-
-    def hit_wall(self) -> bool:
-        return self.snake.x[0] not in range(SIZE, W_SIZE[0] - SIZE) or\
-            self.snake.y[0] not in range(SIZE, W_SIZE[1] - SIZE)
-
-    def hit_self(self) -> bool:
-        return any(self.snake.x[0] == self.snake.x[i] and\
-            self.snake.y[0] == self.snake.y[i] for i in range(3, self.snake.length))
-
     def reset(self):
         self.snake = Snake(self.surface, STARTLENGTH)
 
@@ -53,11 +42,11 @@ class Game:
         self.snake.slither()
         self.wall.draw()
 
-        if self.hit_mouse():
+        if self.snake.hit_mouse(self.mouse):
             self.mouse.move(self.snake)
             self.snake.inc_len()
 
-        if self.hit_wall() or self.hit_self():
+        if self.snake.hit_wall() or self.snake.hit_self():
             raise Exception('Game Over')
 
         self.mouse.draw()
