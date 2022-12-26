@@ -2,7 +2,6 @@ import pygame
 from pygame.locals import *
 from time import sleep
 from random import randint
-from pathlib import Path
 from config import BACKGROUND, EL_SIZE, FPS, SIZE, STARTLENGTH, W_SIZE
 
 
@@ -40,17 +39,18 @@ class Game:
         return self.snake.x[0] == self.mouse.x and self.snake.y[0] == self.mouse.y
 
     def hit_wall(self) -> bool:
-        return self.snake.x[0] not in range(SIZE, W_SIZE[0] - SIZE) or self.snake.y[0] not in range(SIZE, W_SIZE[1] - SIZE)
+        return self.snake.x[0] not in range(SIZE, W_SIZE[0] - SIZE) or\
+            self.snake.y[0] not in range(SIZE, W_SIZE[1] - SIZE)
 
     def hit_self(self) -> bool:
-        return any(self.snake.x[0] == self.snake.x[i] and self.snake.y[0] == self.snake.y[i] for i in range(3, self.snake.length))
+        return any(self.snake.x[0] == self.snake.x[i] and\
+            self.snake.y[0] == self.snake.y[i] for i in range(3, self.snake.length))
 
     def reset(self):
         self.snake = Snake(self.surface, STARTLENGTH)
 
     def play(self):
         self.snake.slither()
-        self.mouse.draw()
         self.wall.draw()
 
         if self.hit_mouse():
@@ -60,6 +60,7 @@ class Game:
         if self.hit_wall() or self.hit_self():
             raise Exception('Game Over')
 
+        self.mouse.draw()
         pygame.display.flip()
 
     def run(self):
@@ -113,9 +114,11 @@ class Game:
         line1 = font.render('Game Over!', True, (0,0,0))
         line2 = font.render(f'Your score: {final_score}', True, (0,0,0))
         line3 = font.render('Press enter to play again...', True, (0,0,0))
+
         self.surface.blit(line1, (200, 240))
         self.surface.blit(line2, (200, 275))
         self.surface.blit(line3, (200, 320))
+
         pygame.display.flip()
 
 
@@ -189,17 +192,14 @@ class Snake:
                     self.surface.blit(self.turn_ul, coords)
                 case 'D' if self.xyd[i - 1] == 'L':
                     self.surface.blit(self.turn_ul, coords)
-
                 case 'L' if self.xyd[i - 1] == 'U':
                     self.surface.blit(self.turn_ur, coords)
                 case 'D' if self.xyd[i - 1] == 'R':
                     self.surface.blit(self.turn_ur, coords)
-
                 case 'U' if self.xyd[i - 1] == 'L':
                     self.surface.blit(self.turn_dl, coords)
                 case 'R' if self.xyd[i - 1] == 'D':
                     self.surface.blit(self.turn_dl, coords)
-
                 case 'U' if self.xyd[i - 1] == 'R':
                     self.surface.blit(self.turn_dr, coords)
                 case 'L' if self.xyd[i - 1] == 'D':
@@ -217,8 +217,8 @@ class Snake:
             case 'R':
                 self.surface.blit(self.tail_r, coords_tail)
 
-    def move(self, dir):
-        match dir:
+    def move(self, next_dir):
+        match next_dir:
             case 'U' if self.xyd[0] != 'D':
                 self.direction = 'U'
             case 'D' if self.xyd[0] != 'U':
