@@ -2,7 +2,7 @@ import pygame
 from pygame.locals import *
 from time import sleep
 from random import randint
-from config import BACKGROUND, EL_SIZE, FPS, SIZE, STARTLENGTH, W_SIZE
+from config import BACKGROUND, GRID, FPS, SIZE, STARTLENGTH, W_SIZE, W_X, W_Y
 
 
 def rand_x() -> int:
@@ -15,28 +15,36 @@ def rand_y() -> int:
 
 def resource(name):
     return pygame.transform.scale(pygame.image.load(
-        f'resources/{name}.png').convert_alpha(), EL_SIZE)
+        f'resources/{name}.png').convert_alpha(), GRID)
 
 
 class Game:
     def __init__(self):
         pygame.init()
+        pygame.display.set_caption('Snake')
         # Sets window size
-        self.surface = pygame.display.set_mode(W_SIZE, SRCALPHA, NOFRAME)
+        self.surface = pygame.display.set_mode((W_X, W_Y + 48), SRCALPHA)
         # Sets background colour
         self.surface.fill(BACKGROUND)
 
-        self.snake = Snake(self.surface, STARTLENGTH)
-        self.snake.draw()
-
+        self.snake = Snake(self.surface)
         self.mouse = Mouse(self.surface)
-        self.mouse.draw()
-
         self.wall = Wall(self.surface)
-        self.wall.draw()
+
+        self.highscore = 0
+
+    def score(self):
+        return self.snake.length - STARTLENGTH
+
+    def display_score(self):
+        font = pygame.font.SysFont('arial', 30)
+        score = font.render(f'Score: {self.score()}', True, (0, 0, 0))
+        highscore = font.render(f'High Score: {self.highscore}', True, (0, 0, 0))
+        self.surface.blit(score, (12, W_Y + 6))
+        self.surface.blit(highscore, (W_X - 200, W_Y + 6))
 
     def reset(self):
-        self.snake = Snake(self.surface, STARTLENGTH)
+        self.snake = Snake(self.surface)
 
     def play(self):
         self.snake.slither()
@@ -47,9 +55,11 @@ class Game:
             self.snake.inc_len()
 
         if self.snake.hit_wall() or self.snake.hit_self():
+            self.highscore = max(self.highscore, self.score())
             raise Exception('Game Over')
 
         self.mouse.draw()
+        self.display_score()
         pygame.display.flip()
 
     def run(self):
@@ -112,12 +122,12 @@ class Game:
 
 
 class Snake:
-    def __init__(self, surface, length):
+    def __init__(self, surface):
         self.surface = surface
-        self.length = length
+        self.length = STARTLENGTH
 
-        self.x = [W_SIZE[0] / SIZE // 2 * SIZE] * length
-        self.y = [W_SIZE[1] / SIZE // 2 * SIZE] * length
+        self.x = [W_SIZE[0] / SIZE // 2 * SIZE] * self.length
+        self.y = [W_SIZE[1] / SIZE // 2 * SIZE] * self.length
 
         self.xyd = ['R'] * STARTLENGTH
 
